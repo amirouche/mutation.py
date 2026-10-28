@@ -942,3 +942,36 @@ if hasattr(_ast, "Match"):
         mutated = [mutation_patch(d, canonical) for d in deltas]
         assert any("case 1:" not in m for m in mutated)
         assert any("case 2:" not in m for m in mutated)
+
+
+def test_mutation_is_survivor_ignored_return_order(tmp_path, monkeypatch):
+    """Ignored mutations must return (uid, False) so callers can unpack correctly."""
+    import os
+    import zlib
+    from mutation import make_uid, mutation_is_survivor, database_open, diff_hash
+
+    # Set up a mutation in a .mutation.db that database_open(".") will find.
+    monkeypatch.chdir(tmp_path)
+    uid = make_uid()
+    diff_text = "--- a/f.py
++++ b/f.py
+@@ -1 +1 @@
+-x = 1
++x = 2
+"
+    diff_bytes = zlib.compress(diff_text.encode("utf8"))
+
+    with database_open(".", recreate=True) as db:
+        db.store_mutations([(uid, "f.py", diff_bytes)])
+
+    # Mark it as ignored.
+    ignored_dir = tmp_path / ".mutations.ignored"
+    ignored_dir.mkdir()
+    h = diff_hash(diff_text)
+    (ignored_dir / f"{h}.diff").write_text(f"# equivalent
+{diff_text}")
+
+    ignored_hashes = frozenset([h])
+    result = mutation_is_survivor((["pytest"], uid, 1, ignored_hashes))
+
+    assert result == (uid, False), f"Expected (uid, False), got {result}"
