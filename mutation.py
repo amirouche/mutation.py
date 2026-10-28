@@ -1590,7 +1590,7 @@ def mutation_is_survivor(args):
         diff_text = zlib.decompress(diff_bytes).decode("utf8")
         if diff_hash(diff_text) in ignored_hashes:
             log.debug("Skipping ignored mutation: {}", uid.hex())
-            return False, uid
+            return uid, False
     command = command + ["--mutation={}".format(uid.hex())]
     log.debug("Running command: {}", " ".join(command))
     out = run(command, timeout=timeout, silent=True)
