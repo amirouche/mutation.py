@@ -1,7 +1,11 @@
 import ast as stdlib_ast
 import random
+import zlib
+from contextlib import nullcontext
+from types import SimpleNamespace
 
 from foobar.ex import decrement_by_two
+import mutation
 import ast as _ast
 from mutation import (
     AugAssignToAssign,
@@ -942,3 +946,19 @@ if hasattr(_ast, "Match"):
         mutated = [mutation_patch(d, canonical) for d in deltas]
         assert any("case 1:" not in m for m in mutated)
         assert any("case 2:" not in m for m in mutated)
+
+
+def test_mutation_is_survivor_ignored_mutation_returns_uid_and_false(monkeypatch):
+    uid = b"ignored"
+    diff_text = "ignored mutation"
+    diff_bytes = zlib.compress(diff_text.encode("utf8"))
+    database = SimpleNamespace(
+        get_mutation=lambda requested_uid: ("module.py", diff_bytes)
+    )
+    monkeypatch.setattr(mutation, "database_open", lambda _: nullcontext(database))
+
+    result = mutation.mutation_is_survivor(
+        ([], uid, 1, frozenset({mutation.diff_hash(diff_text)}))
+    )
+
+    assert result == (uid, False)
