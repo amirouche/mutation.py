@@ -645,6 +645,27 @@ def _make_db(tmp_path):
     return db, uid, diff
 
 
+def test_replay_ignored_mutation(tmp_path, monkeypatch):
+    db, uid, diff = _make_db(tmp_path)
+    with db:
+        assert any(row[0] == uid for row in db.list_results_for_replay())
+    (tmp_path / "test.mutation.db").rename(tmp_path / ".mutation.db")
+    (tmp_path / "f.py").write_text("x = 1\n")
+    write_ignored_file(str(tmp_path), diff.decode(), "f.py", "equivalent")
+    monkeypatch.chdir(tmp_path)
+
+    def unexpected(*args, **kwargs):
+        raise AssertionError("Ignored mutations must not run tests or prompt")
+
+    monkeypatch.setattr(mutation, "run", unexpected)
+    monkeypatch.setattr(mutation, "mutation_show", unexpected)
+    assert mutation.replay_mutation(uid, 1, 0, 1, ["pytest"]) is None
+    with mutation.database_open(".") as db:
+        assert db.list_results_for_replay() == []
+        assert db.list_results() == []
+        assert db.get_mutation(uid)[0] == "f.py"
+
+
 def test_diff_hash():
     h = diff_hash("hello")
     assert len(h) == 64  # sha256 hex digest
