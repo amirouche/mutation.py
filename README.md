@@ -624,3 +624,7 @@ for item in []:
 ## Status
 
 Early stage. Things may break. Bug reports and questions welcome at hello@amirouche.dev.
+
+## About
+
+[Reading mutation.py: a story](https://hyper.dev/2026/dx-4-reading-mutation-py-a-story/) is a guided tour of this tool's source: how it edits syntax trees, stores results in SQLite, and swaps mutants in through a pytest plugin without touching your files. It also argues that passing tests don't prove much on their own, and that a human should review the surviving mutants to separate real gaps from harmless changes.
