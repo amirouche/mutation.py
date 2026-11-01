@@ -1,4 +1,4 @@
-# 🐛 mutation
+# 🐛 `mutation.py`
 
 Mutation testing tells you something coverage numbers can't: whether your tests would actually catch a bug. It works by introducing small deliberate changes into your code — flipping a `+` to a `-`, removing a condition — and checking whether your tests fail. If they don't, the mutation *survived*, and that's a gap worth knowing about.
 
