@@ -623,4 +623,4 @@ for item in []:
 
 ## Status
 
-Early stage. Things may break. Bug reports and questions welcome at amirouche.boubekki@gmail.com.
+Early stage. Things may break. Bug reports and questions welcome at hello@amirouche.dev.
